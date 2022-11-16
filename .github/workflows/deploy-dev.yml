@@ -1,0 +1,37 @@
+name: Deploy to lambda for dev
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    env:
+      stage: dev
+
+    steps:
+    - uses: actions/checkout@master
+    
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    
+    - name: Install dependencies
+      run: npm install
+    
+    
+    - name: serverless deploy
+      uses: serverless/github-action@master
+      with:
+        args: deploy --stage ${{ env.stage }}
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

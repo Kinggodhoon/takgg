@@ -1,0 +1,36 @@
+service: takgg
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  # profile: eb-pinball-developer
+  environment:
+    STAGE: ${opt:stage, self:provider.stage}
+    PROFILE: ${opt:profile, self:provider.profile}
+
+functions:
+  v1:
+    handler: app.v1
+    memorySize: 1024
+    timeout: 900
+    events:
+      - http:
+          method: any
+          path: v1/{any+}
+          cors: true
+
+custom:
+  prune:
+    automatic: true
+    number: 10
+
+package:
+  excludeDevDependencies: true
+  exclude:
+    - .github/**
+    - api/**
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-prune-plugin

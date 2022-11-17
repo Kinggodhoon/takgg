@@ -27,9 +27,7 @@ const responseEnum: { [key: string]: { message: string } } = {
   },
 };
 
-const getResponseMessage = async (code: number): Promise<string> => {
-  return responseEnum[code]?.message;
-}
+const getResponseMessage = async (code: number): Promise<string> => responseEnum[code]?.message;
 
 // Response middleware
 const response = async (request: express.Request, response: express.Response): Promise<void> => {
@@ -46,8 +44,6 @@ const response = async (request: express.Request, response: express.Response): P
     message: message || responseData.message,
     data: responseData.data || null,
   });
-
-  await request.database?.release();
 }
 
 export default response;

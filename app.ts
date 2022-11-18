@@ -3,7 +3,6 @@ import express from 'express'
 import bodyParser from 'body-parser';
 import cors from 'cors'
 
-
 const appV1 = express();
 appV1.use(cors({ optionsSuccessStatus: 200 }));
 appV1.use(bodyParser.json({ strict: true }));

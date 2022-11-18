@@ -5,17 +5,11 @@ import Controller from '../controller';
 import { initDatabase, releaseDatabse } from '../../database/database';
 import response from '../../middleware/response';
 
-class PlayersController extends Controller {
+class PlayersService {
   public readonly path = '/players';
 
   constructor() {
-    super();
-    this.initializeRoutes();
-  }
-
-  private initializeRoutes() {
-    // auth
-    this.router.post(`${this.path}/auth/register`, initDatabase, this.auth, releaseDatabse, response);
+    
   }
 
   private auth = async (req: express.Request, res: express.Response) => {

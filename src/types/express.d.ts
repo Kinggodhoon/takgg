@@ -1,7 +1,8 @@
-declare global {
+export declare global {
   namespace Express {
     interface Request {
-      user: any, // TODO: create user interface
+      requestParams: any,
+      user: any,
     }
 
     interface Response {
@@ -13,4 +14,5 @@ declare global {
       responseError: any,
     }
   }
+
 }

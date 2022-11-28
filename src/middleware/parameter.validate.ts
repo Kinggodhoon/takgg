@@ -1,30 +1,24 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import _ from 'lodash';
 
 export interface Type<T = any> extends Function {
   new(...args: any[]): T;
 }
 
-const transform = async <T>(Class: Type<T>, requestParams: any): Promise<T> => {
+const transform = <T>(Class: Type<T>, requestParams: { [key: string]: any }): Object => {
   const transformed = plainToInstance(Class, requestParams);
 
-  return transformed;
+  return transformed as Object;
 };
 
-// Response middleware
-const parameterValidate = async <T>(
-  request: express.Request,
-  response: express.Response,
-  next: express.NextFunction,
-  type: Type<T>,
-): Promise<any> => {
+const parameterValidate = <T>(dto: Type<T>): RequestHandler => async (request: express.Request, response: express.Response, next: express.NextFunction): Promise<any> => {
   try {
     const { body, params, query } = request;
     const requestParams = _.merge(body, params, query);
 
-    const requestDto = transform(type, requestParams);
+    const requestDto = transform(dto, requestParams);
 
     const validated = await validate(requestDto);
     if (validated.length > 0) {

@@ -1,9 +1,11 @@
 import express from 'express';
-import { validate } from 'class-validator';
 
 import Controller from '../controller';
-import { initDatabase, releaseDatabse } from '../../database/database';
+import { Database, initDatabase, releaseDatabse } from '../../database/database';
 import response from '../../middleware/response';
+import parameterValidate from '../../middleware/parameter.validate';
+import { RegisterRequest } from './model/players.model';
+import PlayersService from './players.service';
 
 class PlayersController extends Controller {
   public readonly path = '/players';
@@ -15,41 +17,31 @@ class PlayersController extends Controller {
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}/auth/register`, initDatabase, this.auth, releaseDatabse, response);
+    this.router.post(`${this.path}/auth/register`, parameterValidate(RegisterRequest), initDatabase, this.register, releaseDatabse, response);
   }
 
-  private auth = async (req: express.Request, res: express.Response) => {
+  private register = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-      // request body validation
-      const validated = await validate(authIn);
-      if (validated.length > 0) {
-        throw new Error('Invalid Parameter Error');
+      const params: RegisterRequest = req.requestParams;
+
+      const playersService = new PlayersService();
+
+      await Database.startTransaction();
+
+      const playerInfo = await playersService.getPlayerByEmail(params.email);
+
+      console.log(playerInfo);
+
+      res.responseData = {
+        code: 200,
+        message: 'Success',
+        data: params,
       }
-
-      // auth signature check
-      authIn.verifySignature();
-
-      await db.startTransaction();
-
-      const walletRepository: WalletRepository = new WalletMSSQLRepository(db);
-
-      const authService = new AuthService(walletRepository);
-
-      const authOut: AuthOUT = await authService.authenticate(authIn);
-
-      await db.commitTransaction();
-
-      const response = new Response(res, 200, authOut);
-      await response.response();
-    } catch (error: any) {
-      await db.rollbackTransaction();
-      Logger.error(error, { params: authIn, method: req.method, path: req.route.path });
-
-      const response = new Response(res, error.status || 403, false, error.message);
-      await response.response();
+    } catch (error) {
+      console.log(error);
     }
+    return next();
   }
-
 }
 
 export default PlayersController;

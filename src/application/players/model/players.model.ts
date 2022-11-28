@@ -1,10 +1,18 @@
 import { IsDefined, IsEmail, IsString } from 'class-validator';
 
+export interface PlayerInfo {
+  username: string;
+  email: string;
+  status: string;
+  style: string;
+  bestScore: number;
+}
+
 export class authRequest {
 
 }
 
-export class registerRequest {
+export class RegisterRequest {
   @IsString()
   @IsDefined()
   public username: string;
@@ -17,13 +25,13 @@ export class registerRequest {
   @IsDefined()
   public password: string;
 
-  constructor(params: {
-    username: string;
-    email: string;
-    password: string;
-  }) {
-    this.username = params.username;
-    this.email = params.email;
-    this.password = params.password;
+  constructor(
+    username: string,
+    email: string,
+    password: string,
+  ) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
   }
 }

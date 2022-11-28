@@ -80,11 +80,13 @@ const setInputParams = (query: string, inputParams?: InputParameter): {
   let result: string = query;
   const values: Array<any> = [];
 
-  let count = 1;
+  let valueCount = 0;
   if (inputParams) {
     Object.keys(inputParams).map((key) => {
-      result = _.replace(query, `@${key}`, `$${count += 1}::${inputParams[key].type}`)
-    })
+      // query formatting
+      result = _.replace(query, `@${key}`, `$${valueCount += 1}::${inputParams[key].type}`);
+      values.push(inputParams[key].value);
+    });
   }
 
   return {
@@ -130,15 +132,23 @@ export class Database {
   static async prepareExcute<T>(args: {
     query: string,
     inputParams?: InputParameter,
-  }): Promise<T> {
+  }): Promise<Array<T> | null> {
     try {
       const { query, inputParams } = args;
 
+      // query input parameter setting
       const { query: newQuery, values } = setInputParams(query, inputParams);
 
-      const result = await Database.client.query(newQuery, values);
+      // query execute
+      const result = (await Database.client.query(newQuery, values)).rows;
 
-      return result as T;
+      // null check
+      if (result.length < 1) {
+        return null;
+      }
+
+      // return array result
+      return result as Array<T>;
     } catch (error) {
       throw new Error(`
       ${error}

@@ -1,4 +1,11 @@
 import { PlayerInfo } from '../application/players/model/players.model';
+import { HttpException } from './exception';
+
+export interface ResponseData {
+  code: number = 200,
+  message: string = 'Success',
+  data: any,
+}
 
 declare global {
   namespace Express {
@@ -8,12 +15,8 @@ declare global {
     }
 
     interface Response {
-      responseData: {
-        code: number = 200,
-        message: string = 'Success',
-        data: any,
-      },
-      responseError: any,
+      responseData: ResponseData,
+      responseError: HttpException | any | unknown,
     }
   }
 }

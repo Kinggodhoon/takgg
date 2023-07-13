@@ -1,4 +1,5 @@
 import express from 'express';
+import { ResponseData } from '../types/express';
 
 const responseEnum: { [key: string]: { message: string } } = {
   200: {
@@ -33,16 +34,34 @@ const getResponseMessage = async (code: number): Promise<string> => responseEnum
 const response = async (request: express.Request, response: express.Response): Promise<void> => {
   const { responseData, responseError } = response;
 
-  // Get error message
-  let message;
-  if (responseError && !responseData.message) {
-    message = getResponseMessage(responseData.code);
+  // Successfully Response
+  if (!responseError) {
+    // Send response
+    response.status(responseData.code).json({
+      message: responseData.message,
+      data: responseData.data || null,
+    });
+
+    return;
+  }
+
+  // Error Response
+  const errorResponse: ResponseData = {
+    code: 500,
+    message: 'Unknown server error',
+    data: null,
+  }
+  if (responseError.code) {
+    Object.assign(errorResponse, {
+      code: responseError.code,
+      message: getResponseMessage(responseError.code) || responseError.message,
+    });
   }
 
   // Send response
-  response.status(responseData.code).json({
-    message: message || responseData.message,
-    data: responseData.data || null,
+  response.status(errorResponse.code).json({
+    message: errorResponse.message,
+    data: null,
   });
 }
 

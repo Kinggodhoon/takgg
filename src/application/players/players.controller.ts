@@ -22,15 +22,13 @@ class PlayersController extends Controller {
 
   private register = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-      const params: RegisterRequest = req.requestParams;
+      const params = req.requestParams as RegisterRequest;
 
       const playersService = new PlayersService();
 
       await Database.startTransaction();
 
       const playerInfo = await playersService.getPlayerByEmail(params.email);
-
-      console.log(playerInfo);
 
       res.responseData = {
         code: 200,

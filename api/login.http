@@ -1,8 +1,14 @@
-@endpoint = http://localhost:3001
+@endpoint = http://localhost:3000
 
 @contentType = application/json
 
 
 ### login
-POST {{endpoint}}/v1/ HTTP/1.1
+POST {{endpoint}}/dev/v1/players/auth/register HTTP/1.1
 content-type: {{contentType}}
+
+{
+  "username": "string",
+  "email": "string@test.co",
+  "password": "password"
+}

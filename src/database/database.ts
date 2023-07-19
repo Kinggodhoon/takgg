@@ -77,20 +77,20 @@ const setInputParams = (query: string, inputParams?: InputParameter): {
   query: string,
   values: Array<any>,
 } => {
-  let result: string = query;
+  let refinedQuery: string = query;
   const values: Array<any> = [];
 
   let valueCount = 0;
   if (inputParams) {
     Object.keys(inputParams).map((key) => {
       // query formatting
-      result = _.replace(query, `@${key}`, `$${valueCount += 1}::${inputParams[key].type}`);
+      refinedQuery = _.replace(refinedQuery, `@${key}`, `$${valueCount += 1}::${inputParams[key].type}`);
       values.push(inputParams[key].value);
     });
   }
 
   return {
-    query: result,
+    query: refinedQuery,
     values,
   };
 }
@@ -137,10 +137,10 @@ export class Database {
       const { query, inputParams } = args;
 
       // query input parameter setting
-      const { query: newQuery, values } = setInputParams(query, inputParams);
+      const { query: refinedQuery, values } = setInputParams(query, inputParams);
 
       // query execute
-      const result = (await Database.client.query(newQuery, values)).rows;
+      const result = (await Database.client.query(refinedQuery, values)).rows;
 
       // null check
       if (result.length < 1) {

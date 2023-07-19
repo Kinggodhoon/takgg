@@ -4,7 +4,7 @@ import Controller from '../controller';
 import { Database, initDatabase, releaseDatabse } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
-import { RegisterRequest } from './model/players.model';
+import { AuthRequest } from './model/players.model';
 import PlayersService from './players.service';
 
 class PlayersController extends Controller {
@@ -17,18 +17,12 @@ class PlayersController extends Controller {
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}/auth/register`, parameterValidate(RegisterRequest), initDatabase, this.register, releaseDatabse, response);
+    this.router.post(`${this.path}/auth`, parameterValidate(AuthRequest), initDatabase, this.auth, releaseDatabse, response);
   }
 
-  private register = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  private auth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-      const params = req.requestParams as RegisterRequest;
-
-      const playersService = new PlayersService();
-
-      await Database.startTransaction();
-
-      const playerInfo = await playersService.getPlayerByEmail(params.email);
+      const params = req.requestParams as AuthRequest;
 
       res.responseData = {
         code: 200,

@@ -1,37 +1,36 @@
-import { IsDefined, IsEmail, IsString } from 'class-validator';
+import { IsDefined, IsString } from 'class-validator';
+
+export enum PlayerStyle {
+  SHAKE = 'shake',
+  PENHOLD = 'penhold',
+}
 
 export interface PlayerInfo {
-  username: string;
-  email: string;
-  status: string;
-  style: string;
-  bestScore: number;
+  playerId: string;
+  realName: string;
+  displayName: string;
+  profileImage: string;
 }
 
-export class authRequest {
-
+export interface PlayerProfile {
+  playerId: string;
+  realName: string;
+  displayName: string;
+  profileImage: string;
+  style: PlayerStyle;
+  raket?: string;
+  rubberList?: Array<string>;
+  bestRatingPoting: number;
 }
 
-export class RegisterRequest {
+export class AuthRequest {
   @IsString()
   @IsDefined()
-  public username: string;
-
-  @IsEmail()
-  @IsDefined()
-  public email: string;
-
-  @IsString()
-  @IsDefined()
-  public password: string;
+  public oneTimeToken: string;
 
   constructor(
-    username: string,
-    email: string,
-    password: string,
+    oneTimeToken: string,
   ) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
+    this.oneTimeToken = oneTimeToken;
   }
 }

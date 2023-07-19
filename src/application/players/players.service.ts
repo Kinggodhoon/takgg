@@ -1,32 +1,29 @@
-import bcrypt from 'bcrypt';
-
 import { Database, InputParameter } from '../../database/database';
-import { PlayerInfo, RegisterRequest } from './model/players.model';
+import { PlayerInfo } from './model/players.model';
 
 class PlayersService {
-  public readonly path = '/players';
-
-  public registerPlayerInfo = async (params: RegisterRequest): Promise<boolean> => {
-    // insert player info
-    const salt = await bcrypt.genSalt(10);
-    const hasedPassword = await bcrypt.hash(params.password, salt);
-
+  public insertPlayerInfo = async (params: PlayerInfo): Promise<boolean> => {
+    // Insert player
     const query = `
-      INSERT INTO player(username, email, password)
-      VALUES(@username, @email, @password)
+      INSERT INTO player(player_id, real_name, display_name, profile_image)
+      VALUES(@playerId, @realName, @displayName, @profileImage)
     `;
 
     const inputParams: InputParameter = {
-      username: {
-        value: params.username,
+      playerId: {
+        value: params.playerId,
         type: 'VARCHAR',
       },
-      email: {
-        value: params.email,
+      realName: {
+        value: params.realName,
         type: 'VARCHAR',
       },
-      password: {
-        value: hasedPassword,
+      displayName: {
+        value: params.displayName,
+        type: 'VARCHAR',
+      },
+      profileImage: {
+        value: params.profileImage,
         type: 'VARCHAR',
       },
     };
@@ -39,44 +36,52 @@ class PlayersService {
     return true;
   };
 
-  public registerPlayerProfile = async (username: string): Promise<boolean> => {
-    // insert player profile
-    const query = `
-      INSERT INTO player_profile(username)
-      VALUES(@username)
+  public insertPlayerProfile = async (playerId: string): Promise<boolean> => {
+    // Insert player profile
+    const insertPlayerProfileQuery = `
+      INSERT INTO player_profile(player_id)
+      VALUES(@playerId)
+    `;
+
+    const insertPlayerRatingQuery = `
+      INSERT INTO ratings(player_id)
+      VALUES(@playerId)
     `;
 
     const inputParams: InputParameter = {
-      username: {
-        value: username,
+      playerId: {
+        value: playerId,
         type: 'VARCHAR',
       },
     };
 
     await Database.prepareExcute<void>({
-      query,
+      query: insertPlayerProfileQuery,
+      inputParams,
+    });
+
+    await Database.prepareExcute<void>({
+      query: insertPlayerRatingQuery,
       inputParams,
     });
 
     return true;
-  }
+  };
 
-  public getPlayerByEmail = async (email: string): Promise<PlayerInfo | null> => {
+  public getPlayerInfo = async (playerId: string): Promise<PlayerInfo | null> => {
     const query = `
       SELECT
-        p.username
-        ,p.email
-        ,p.status
-        ,pp.style
-        ,pp.best_score as bestScore
-      FROM player p
-      LEFT JOIN player_profile pp ON (p.username = pp.username)
-      WHERE p.email = @email
+        player_id as playerId
+        ,real_name as realName
+        ,display_name as displayName
+        ,profile_image as profileImage
+      FROM player
+      WHERE player_id = @playerId
     `;
 
     const inputParams: InputParameter = {
-      email: {
-        value: email,
+      playerId: {
+        value: playerId,
         type: 'VARCHAR',
       },
     };

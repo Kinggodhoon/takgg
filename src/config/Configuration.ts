@@ -1,8 +1,7 @@
-import { PoolConfig } from "pg";
+import { PoolConfig } from 'pg';
 
 export enum SupportedEnvironment {
   development = 'development',
-  production = 'prod',
 }
 
 export interface Configuration {
@@ -10,4 +9,9 @@ export interface Configuration {
   readonly JWT_SECRET: string;
   readonly JWT_EXPIRES_IN: string;
   readonly DB_INFO: PoolConfig;
+
+  readonly SLACK_BOT_CONFIG: {
+    BOT_TOKEN: string;
+    USER_TOKEN: string;
+  };
 }

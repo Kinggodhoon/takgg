@@ -1,6 +1,5 @@
 import { Configuration, SupportedEnvironment } from './Configuration'
 import Development from './Development'
-import Production from './Production'
 
 export default class Config {
   private static config: Configuration
@@ -10,9 +9,6 @@ export default class Config {
       switch (process.env.NODE_ENV) {
         case SupportedEnvironment.development:
           this.config = Development;
-          break;
-        case SupportedEnvironment.production:
-          this.config = Production;
           break;
         default:
           this.config = Development;

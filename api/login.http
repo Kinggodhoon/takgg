@@ -4,7 +4,7 @@
 
 
 ### login
-POST {{endpoint}}/dev/v1/players/auth/register HTTP/1.1
+POST {{endpoint}}/dev/v1/players/auth HTTP/1.1
 content-type: {{contentType}}
 
 {

@@ -169,7 +169,7 @@ export const initDatabase = async (request: express.Request, response: express.R
   next();
 }
 
-export const releaseDatabse = async (request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> => {
+export const releaseDatabase = async (request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> => {
   await Database.release();
 
   next();

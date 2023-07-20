@@ -311,6 +311,6 @@ src/config/**
 !src/config/configuration.ts
 
 # API Test
-api/slackAppHomeEdit.ignore.http
+api/**/*.ignore.http
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,webstorm

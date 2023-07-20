@@ -1,0 +1,12 @@
+@endpoint = http://localhost:3000
+
+@contentType = application/json
+
+
+### auth
+POST {{endpoint}}/dev/v1/auth HTTP/1.1
+content-type: {{contentType}}
+
+{
+  "oneTimeToken": "aa0d966ada99479e99afa596f6d501d4"
+}

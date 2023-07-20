@@ -3,12 +3,13 @@ import { WebClient } from '@slack/web-api';
 import { v4 as uuid } from 'uuid';
 
 import Controller from '../controller';
-import { Database, initDatabase, releaseDatabse } from '../../database/database';
+import { Database, initDatabase, releaseDatabase } from '../../database/database';
 import { SlackActionType, SlackEventParams } from './model/slack.model';
 import { HttpException } from '../../types/exception';
 import PlayersService from '../players/players.service';
 import AuthService from '../auth/auth.service';
 import Config from '../../config/Config';
+import response from '../../middleware/response';
 
 class SlackController extends Controller {
   public readonly path = '/slack';
@@ -30,7 +31,7 @@ class SlackController extends Controller {
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}/`, initDatabase, this.getAuthToken, releaseDatabse);
+    this.router.post(`${this.path}`, initDatabase, this.getAuthToken, releaseDatabase, response);
   }
 
   private getAuthToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -63,7 +64,7 @@ class SlackController extends Controller {
 
       // Generate auth one time token
       const oneTimeToken = uuid().replace(/-/g, '');
-      // await this.authService.insertOnetimeToken(params.user.id, oneTimeToken);
+      await this.authService.insertOnetimeToken(params.user.id, oneTimeToken);
 
       await Database.commitTransaction();
 
@@ -71,7 +72,7 @@ class SlackController extends Controller {
       await this.slackClient.chat.postMessage({
         channel: params.user.id,
         text: `Hi ${params.user.id} here's your [TakGG] auth secret key! \n\nSecretKey: ${oneTimeToken} \n\nIf you don't have the [TakGG] application, DM Hoon!`,
-      })
+      });
     } catch (error) {
       console.log(error);
       await Database.rollbackTransaction();

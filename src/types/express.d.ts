@@ -2,9 +2,9 @@ import { PlayerInfo } from '../application/players/model/players.model';
 import { HttpException } from './exception';
 
 export interface ResponseData {
-  code: number = 200,
-  message: string = 'Success',
-  data: any,
+  code?: number,
+  message?: string,
+  data?: any,
 }
 
 declare global {

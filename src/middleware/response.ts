@@ -28,18 +28,17 @@ const responseEnum: { [key: string]: { message: string } } = {
   },
 };
 
-const getResponseMessage = async (code: number): Promise<string> => responseEnum[code]?.message;
+const getResponseMessage = (code: number): string => responseEnum[code]?.message;
 
 // Response middleware
 const response = async (request: express.Request, response: express.Response): Promise<void> => {
   const { responseData, responseError } = response;
-
   // Successfully Response
   if (!responseError) {
     // Send response
-    response.status(responseData.code).json({
-      message: responseData.message,
-      data: responseData.data || null,
+    response.status(responseData?.code || 200).json({
+      message: responseData?.message || 'Success',
+      data: responseData?.data || null,
     });
 
     return;
@@ -59,7 +58,7 @@ const response = async (request: express.Request, response: express.Response): P
   }
 
   // Send response
-  response.status(errorResponse.code).json({
+  response.status(errorResponse.code!).json({
     message: errorResponse.message,
     data: null,
   });

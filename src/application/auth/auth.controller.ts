@@ -1,7 +1,7 @@
 import express from 'express';
 
 import Controller from '../controller';
-import { Database, initDatabase, releaseDatabase } from '../../database/database';
+import { initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
 
@@ -9,6 +9,7 @@ import PlayersService from '../players/players.service';
 import AuthService from './auth.service';
 import { AuthRequest } from './model/auth.model';
 import { HttpException } from '../../types/exception';
+import { PlayerInfo } from '../players/model/players.model';
 
 class AuthController extends Controller {
   public readonly path = '/auth';
@@ -41,7 +42,12 @@ class AuthController extends Controller {
       const playerProfile = await this.playersService.getPlayerProfile(authTokenInfo.playerId);
       if (!playerProfile) throw new HttpException(403, 'Invalid Authentication');
 
-      const accessToken = this.authService.generateAccessToken(playerProfile.playerId, playerProfile.displayName);
+      const accessToken = this.authService.generateAccessToken({
+        playerId: playerProfile.playerId,
+        realName: playerProfile.realName,
+        displayName: playerProfile.displayName,
+        profileImage: playerProfile.profileImage,
+      } as PlayerInfo);
 
       await this.authService.deleteOnetimeToken(authTokenInfo);
 

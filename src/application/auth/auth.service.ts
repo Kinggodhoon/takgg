@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import Config from '../../config/Config';
 
 import { Database, InputParameter } from '../../database/database';
+import { PlayerInfo } from '../players/model/players.model';
 
 import { AuthTokenInfo } from './model/auth.model';
 
@@ -81,10 +82,12 @@ class AuthService {
     return result ? result[0] : null;
   };
 
-  public generateAccessToken = (playerId: string, displayName: string): string => jwt.sign(
+  public generateAccessToken = (playerInfo: PlayerInfo): string => jwt.sign(
     {
-      playerId,
-      displayName,
+      playerId: playerInfo.playerId,
+      realName: playerInfo.realName,
+      displayName: playerInfo.displayName,
+      profileImage: playerInfo.profileImage,
     },
     Config.getConfig().JWT_SECRET,
     {

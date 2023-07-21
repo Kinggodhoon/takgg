@@ -94,6 +94,50 @@ class PlayersService {
     return result ? result[0] : null;
   }
 
+  public getAllPlayerList = async (): Promise<Array<PlayerInfo>> => {
+    const query = `
+      SELECT
+        player_id as "playerId"
+        ,real_name as "realName"
+        ,display_name as "displayName"
+        ,profile_image as "profileImage"
+      FROM player
+    `;
+
+    const result = await Database.prepareExcute<PlayerInfo>({
+      query,
+    });
+
+    if (!result) return []
+    return result;
+  }
+
+  public getPlayerInfoList = async (playerIdList: Array<string>): Promise<PlayerInfo | null> => {
+    const query = `
+      SELECT
+        player_id as "playerId"
+        ,real_name as "realName"
+        ,display_name as "displayName"
+        ,profile_image as "profileImage"
+      FROM player
+      WHERE player_id = @playerId
+    `;
+
+    const inputParams: InputParameter = {
+      playerId: {
+        value: `(${playerIdList.join("','")})`,
+        type: 'VARCHAR',
+      },
+    };
+
+    const result = await Database.prepareExcute<PlayerInfo>({
+      query,
+      inputParams,
+    });
+
+    return result ? result[0] : null;
+  }
+
   public getPlayerProfile = async (playerId: string): Promise<PlayerProfile | null> => {
     const query = `
       SELECT
@@ -129,24 +173,6 @@ class PlayersService {
     // Formatting rubber list
     result[0].rubberList = result[0].rubberList ? (result[0].rubberList! as string).split(',') : null;
     return result[0];
-  }
-
-  public getAllPlayerList = async (): Promise<Array<PlayerInfo>> => {
-    const query = `
-      SELECT
-        player_id as "playerId"
-        ,real_name as "realName"
-        ,display_name as "displayName"
-        ,profile_image as "profileImage"
-      FROM player
-    `;
-
-    const result = await Database.prepareExcute<PlayerInfo>({
-      query,
-    });
-
-    if (!result) return []
-    return result;
   }
 }
 

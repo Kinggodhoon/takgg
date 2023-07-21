@@ -2,7 +2,7 @@
 
 @contentType = application/json
 
-@accessToken = a.b.c
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF5ZXJJZCI6IlVOWDFLRVg2WiIsImRpc3BsYXlOYW1lIjoiS2luZ2dvZGhvb24iLCJpYXQiOjE2ODk5MDMxNTAsImV4cCI6MTcyMTQ2MDc1MCwiaXNzIjoiVGFrZ2cifQ.YF3-k5kWhqDn-_OtmPVJ5MaykjLx3sZgiECnArCSr6Q
 
 
 ### get all player list

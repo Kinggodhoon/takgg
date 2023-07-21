@@ -311,6 +311,6 @@ src/config/**
 !src/config/configuration.ts
 
 # API Test
-api/**/*.ignore.http
+api/*
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,webstorm

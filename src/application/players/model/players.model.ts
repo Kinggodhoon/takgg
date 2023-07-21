@@ -18,19 +18,19 @@ export interface PlayerProfile {
   displayName: string;
   profileImage: string;
   style: PlayerStyle;
-  raket?: string;
-  rubberList?: Array<string>;
+  racket: string | null;
+  rubberList: string | Array<string> | null;
   bestRatingPoting: number;
 }
 
-export class AuthRequest {
+export class GetPlayerProfileRequest {
   @IsString()
   @IsDefined()
-  public oneTimeToken: string;
+  public playerId: string;
 
   constructor(
-    oneTimeToken: string,
+    playerId: string,
   ) {
-    this.oneTimeToken = oneTimeToken;
+    this.playerId = playerId;
   }
 }

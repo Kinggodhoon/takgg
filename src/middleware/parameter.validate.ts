@@ -28,7 +28,7 @@ const parameterValidate = <T>(dto: Type<T>): RequestHandler => async (request: e
     request.requestParams = requestDto;
 
     return next();
-  } catch (e) {
+  } catch {
     return response.status(400).json({
       message: 'Invalid request parameter',
       data: null,

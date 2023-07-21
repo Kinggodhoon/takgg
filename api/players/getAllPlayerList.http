@@ -4,9 +4,8 @@
 
 @accessToken = a.b.c
 
-@playerId = UNX1KEX6Z
 
-### get player profile
-GET {{endpoint}}/dev/v1/players/{{playerId}} HTTP/1.1
+### get all player list
+GET {{endpoint}}/dev/v1/players HTTP/1.1
 Authorization: Bearer {{accessToken}}
 content-type: {{contentType}}

@@ -71,7 +71,7 @@ class SlackController extends Controller {
       // Response slack DM
       await this.slackClient.chat.postMessage({
         channel: params.user.id,
-        text: `Hi ${params.user.id} here's your [TakGG] auth secret key! \n\nSecretKey: ${oneTimeToken} \n\nIf you don't have the [TakGG] application, DM Hoon!`,
+        text: `Hi ${slackUserProfile.display_name}! Here's your [TakGG] Auth secret key! \n\nSecretKey: ${oneTimeToken} \n\nIf you don't have the [TakGG] Application, DM Hoon!`,
       });
     } catch (error) {
       console.log(error);

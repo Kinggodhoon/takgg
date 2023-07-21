@@ -1,3 +1,6 @@
+import jwt from 'jsonwebtoken';
+import Config from '../../config/Config';
+
 import { Database, InputParameter } from '../../database/database';
 
 import { AuthTokenInfo } from './model/auth.model';
@@ -31,8 +34,8 @@ class AuthService {
   public getOnetimeToken = async (oneTimeToken: string): Promise<AuthTokenInfo | null> => {
     const query = `
       SELECT
-        player_id as playerId
-        ,one_time_token as oneTimeToken
+        player_id as "playerId"
+        ,one_time_token as "oneTimeToken"
       FROM auth_token
       WHERE one_time_token = @oneTimeToken
     `;
@@ -51,6 +54,44 @@ class AuthService {
 
     return result ? result[0] : null;
   };
+
+  public deleteOnetimeToken = async (authTokenInfo: AuthTokenInfo): Promise<AuthTokenInfo | null> => {
+    const query = `
+      DELETE FROM auth_token
+      WHERE player_id = @playerId
+        AND one_time_token = @oneTimeToken
+    `;
+
+    const inputParams: InputParameter = {
+      playerId: {
+        value: authTokenInfo.playerId,
+        type: 'VARCHAR',
+      },
+      oneTimeToken: {
+        value: authTokenInfo.oneTimeToken,
+        type: 'VARCHAR',
+      },
+    };
+
+    const result = await Database.prepareExcute<AuthTokenInfo>({
+      query,
+      inputParams,
+    });
+
+    return result ? result[0] : null;
+  };
+
+  public generateAccessToken = (playerId: string, displayName: string): string => jwt.sign(
+    {
+      playerId,
+      displayName,
+    },
+    Config.getConfig().JWT_SECRET,
+    {
+      issuer: 'Takgg',
+      expiresIn: Config.getConfig().JWT_EXPIRES_IN,
+    },
+  );
 }
 
 export default AuthService;

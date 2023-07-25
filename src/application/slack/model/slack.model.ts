@@ -1,5 +1,7 @@
 export enum SlackActionType {
   GET_AUTH_TOKEN = 'getAuthToken',
+  INVALID_GAME = 'invalidGame',
+  VALIDATED_GAME = 'validatedGame',
 }
 
 export interface SlackEventParams {
@@ -12,10 +14,10 @@ export interface SlackEventParams {
   },
   token: string,
   actions: Array<{
-    action_id: string,
+    action_id: SlackActionType,
     block_id: string,
     text: Array<Object>,
-    value: SlackActionType,
+    value: string,
     type: string,
     action_ts: string,
   }>

@@ -1,5 +1,5 @@
 import { Database, InputParameter } from '../../database/database';
-import { PlayerInfo, PlayerProfile } from './model/players.model';
+import { PlayerInfo, PlayerProfile, PlayerRating } from './model/players.model';
 
 class PlayersService {
   public insertPlayerInfo = async (params: PlayerInfo): Promise<boolean> => {
@@ -38,13 +38,8 @@ class PlayersService {
 
   public insertPlayerProfile = async (playerId: string): Promise<boolean> => {
     // Insert player profile
-    const insertPlayerProfileQuery = `
+    const query = `
       INSERT INTO player_profile(player_id)
-      VALUES(@playerId)
-    `;
-
-    const insertPlayerRatingQuery = `
-      INSERT INTO ratings(player_id)
       VALUES(@playerId)
     `;
 
@@ -56,12 +51,7 @@ class PlayersService {
     };
 
     await Database.prepareExcute<void>({
-      query: insertPlayerProfileQuery,
-      inputParams,
-    });
-
-    await Database.prepareExcute<void>({
-      query: insertPlayerRatingQuery,
+      query,
       inputParams,
     });
 
@@ -112,30 +102,20 @@ class PlayersService {
     return result;
   }
 
-  public getPlayerInfoList = async (playerIdList: Array<string>): Promise<PlayerInfo | null> => {
+  public getPlayerRatingList = async (playerIdList: Array<string>): Promise<Array<PlayerRating>> => {
     const query = `
       SELECT
         player_id as "playerId"
-        ,real_name as "realName"
-        ,display_name as "displayName"
-        ,profile_image as "profileImage"
-      FROM player
-      WHERE player_id = @playerId
+        ,rating_point as "ratingPoint"
+      FROM player_profile
+      WHERE player_id IN ('${playerIdList.join("','")}')
     `;
 
-    const inputParams: InputParameter = {
-      playerId: {
-        value: `(${playerIdList.join("','")})`,
-        type: 'VARCHAR',
-      },
-    };
-
-    const result = await Database.prepareExcute<PlayerInfo>({
+    const result = await Database.prepareExcute<PlayerRating>({
       query,
-      inputParams,
     });
 
-    return result ? result[0] : null;
+    return result || [];
   }
 
   public getPlayerProfile = async (playerId: string): Promise<PlayerProfile | null> => {
@@ -148,6 +128,7 @@ class PlayersService {
         ,pp.style as "style"
         ,rk.name as "racket"
         ,STRING_AGG(rb.name, ',') as "rubberList"
+        ,pp.rating_point as "ratingPoint"
       FROM player p
       JOIN player_profile pp ON (pp.player_id = p.player_id)
       left JOIN rackets rk ON (rk.racket_id = pp.racket_id)

@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsValidGameResult } from '../../../decorator/gameResult.decorator';
 
 export enum PlayerStyle {
   SHAKE = 'shake',
@@ -25,14 +26,14 @@ export interface PlayerProfile {
   bestRatingPoting: number;
 }
 
-class GameResult {
+export class GameResult {
   @IsString()
   @IsDefined()
-  playerId!: string;
+  public playerId!: string;
 
   @IsNumber()
   @IsDefined()
-  score!: number;
+  public score!: number;
 }
 
 export class SubmitGameResultRequest {
@@ -42,6 +43,7 @@ export class SubmitGameResultRequest {
   @ArrayMaxSize(2)
   @ValidateNested({ each: true })
   @Type(() => GameResult)
+  @IsValidGameResult()
   public resultList: Array<GameResult>;
 
   constructor(

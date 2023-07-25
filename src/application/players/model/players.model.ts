@@ -12,6 +12,13 @@ export interface PlayerInfo {
   profileImage: string;
 }
 
+export interface PlayerRating {
+  playerId: string;
+  displayName: string;
+  ratingPoint: number;
+  ratingTransition?: number;
+}
+
 export interface PlayerProfile {
   playerId: string;
   realName: string;
@@ -20,7 +27,7 @@ export interface PlayerProfile {
   style: PlayerStyle;
   racket: string | null;
   rubberList: string | Array<string> | null;
-  bestRatingPoting: number;
+  ratingPoint: number;
 }
 
 export class GetPlayerProfileRequest {

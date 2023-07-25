@@ -1,6 +1,6 @@
 import express from 'express';
 import _ from 'lodash';
-import { Client } from 'pg';
+import { Pool, PoolClient } from 'pg';
 
 import Config from '../config/Config';
 
@@ -84,7 +84,7 @@ const setInputParams = (query: string, inputParams?: InputParameter): {
   if (inputParams) {
     Object.keys(inputParams).map((key) => {
       // query formatting
-      refinedQuery = _.replace(refinedQuery, `@${key}`, `$${valueCount += 1}::${inputParams[key].type}`);
+      refinedQuery = _.replace(refinedQuery, new RegExp(`@${key}`, 'g'), `$${valueCount += 1}::${inputParams[key].type}`);
       values.push(inputParams[key].value);
     });
   }
@@ -98,23 +98,22 @@ const setInputParams = (query: string, inputParams?: InputParameter): {
 export class Database {
   public static singleton: Database;
 
-  static client: Client;
-  static isTransaction: boolean;
+  static client: PoolClient;
+  static pool: Pool;
 
   private constructor() {
-    Database.client = new Client(Config.getConfig().DB_INFO);
-    Database.isTransaction = false;
+    Database.pool = new Pool(Config.getConfig().DB_INFO);
   }
 
   static async initDatabase(): Promise<void> {
     if (!this.singleton) {
       this.singleton = new Database();
     }
-    await Database.client.connect();
+    Database.client = await Database.pool.connect();
   }
 
   static async release(): Promise<void> {
-    await Database.client.end();
+    await Database.pool.end();
   }
 
   static async startTransaction(): Promise<void> {
@@ -164,7 +163,7 @@ export class Database {
 }
 
 export const initDatabase = async (request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> => {
-  Database.initDatabase();
+  await Database.initDatabase();
 
   next();
 }

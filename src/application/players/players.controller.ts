@@ -37,6 +37,7 @@ class PlayersController extends Controller {
       }
     } catch (error) {
       console.log(error);
+      res.responseError = error;
     }
     return next();
   }
@@ -54,6 +55,7 @@ class PlayersController extends Controller {
       }
     } catch (error) {
       console.log(error);
+      res.responseError = error;
     }
     return next();
   }

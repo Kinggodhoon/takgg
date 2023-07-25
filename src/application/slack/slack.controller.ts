@@ -1,5 +1,4 @@
 import express from 'express';
-import { WebClient } from '@slack/web-api';
 import { v4 as uuid } from 'uuid';
 
 import Controller from '../controller';
@@ -8,23 +7,21 @@ import { SlackActionType, SlackEventParams } from './model/slack.model';
 import { HttpException } from '../../types/exception';
 import PlayersService from '../players/players.service';
 import AuthService from '../auth/auth.service';
-import Config from '../../config/Config';
 import response from '../../middleware/response';
+import SlackService from './slack.service';
 
 class SlackController extends Controller {
   public readonly path = '/slack';
 
-  // SDK
-  private slackClient: WebClient;
-
   // Services
+  private slackService: SlackService;
   private playersService: PlayersService;
   private authService: AuthService;
 
   constructor() {
     super();
     this.initializeRoutes();
-    this.slackClient = new WebClient(Config.getConfig().SLACK_BOT_CONFIG.BOT_TOKEN);
+    this.slackService = new SlackService();
     this.playersService = new PlayersService();
     this.authService = new AuthService();
   }
@@ -40,42 +37,59 @@ class SlackController extends Controller {
       const params: SlackEventParams = JSON.parse(req.body.payload);
 
       // Validating slack request type
-      if (!Object.values(SlackActionType).includes(params.actions[0].value)) throw new HttpException(400, 'Invalid Slack Request');
+      if (!Object.values(SlackActionType).includes(params.actions[0].action_id)) throw new HttpException(400, 'Invalid Slack Request');
+
+      const { action_id: actionsId } = params.actions[0];
 
       // Generate auth token flows
-      // Get user profile
-      const getUserProfileReponse = await this.slackClient.users.profile.get({ user: params.user.id })
-      const { profile: slackUserProfile } = getUserProfileReponse;
-      if (!getUserProfileReponse.ok || !slackUserProfile) throw new HttpException(418, 'Slack Request Error');
+      if (actionsId === SlackActionType.GET_AUTH_TOKEN) {
+        // Get user profile
+        const getUserProfileReponse = await this.slackService.getUserProfile(params.user.id);
+        const { profile: slackUserProfile } = getUserProfileReponse;
+        if (!getUserProfileReponse.ok || !slackUserProfile) throw new HttpException(418, 'Slack Request Error');
 
-      // Insert user info
-      const playerInfo = await this.playersService.getPlayerInfo(params.user.id);
+        // Insert user info
+        const playerInfo = await this.playersService.getPlayerInfo(params.user.id);
 
-      await Database.startTransaction();
-      if (!playerInfo) {
-        await this.playersService.insertPlayerInfo({
+        const oneTimeToken = uuid().replace(/-/g, '');
+        await Database.startTransaction();
+        try {
+          if (!playerInfo) {
+            await this.playersService.insertPlayerInfo({
+              playerId: params.user.id,
+              realName: slackUserProfile.real_name!,
+              displayName: slackUserProfile.display_name!,
+              profileImage: slackUserProfile.image_512!,
+            });
+            await this.playersService.insertPlayerProfile(params.user.id);
+          }
+
+          // Generate auth one time token
+          await this.authService.insertOnetimeToken(params.user.id, oneTimeToken);
+
+          await Database.commitTransaction();
+        } catch {
+          await Database.rollbackTransaction();
+        }
+
+        // Response slack DM
+        await this.slackService.sendAuthTokenMessage({
           playerId: params.user.id,
-          realName: slackUserProfile.real_name!,
           displayName: slackUserProfile.display_name!,
-          profileImage: slackUserProfile.image_512!,
-        });
-        await this.playersService.insertPlayerProfile(params.user.id);
+        }, oneTimeToken);
       }
 
-      // Generate auth one time token
-      const oneTimeToken = uuid().replace(/-/g, '');
-      await this.authService.insertOnetimeToken(params.user.id, oneTimeToken);
+      if (actionsId === SlackActionType.VALIDATED_GAME) {
 
-      await Database.commitTransaction();
+      }
 
-      // Response slack DM
-      await this.slackClient.chat.postMessage({
-        channel: params.user.id,
-        text: `Hi ${slackUserProfile.display_name}! Here's your [TakGG] Auth secret key! \n\nSecretKey: ${oneTimeToken} \n\nIf you don't have the [TakGG] Application, DM Hoon!`,
-      });
+      if (actionsId === SlackActionType.INVALID_GAME) {
+
+      }
+
     } catch (error) {
       console.log(error);
-      await Database.rollbackTransaction();
+      // TODO: send something has wrong slack message
     }
     return next();
   }

@@ -5,7 +5,7 @@ import Controller from '../controller';
 import { Database, initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
-import { SubmitGameResultRequest } from './model/games.model';
+import { GetPlayerMatchHistoryRequest, SubmitGameResultRequest } from './model/games.model';
 import PlayersService from '../players/players.service';
 import authorizeValidate from '../../middleware/authorize.validate';
 import { HttpException } from '../../types/exception';
@@ -29,7 +29,10 @@ class GamesController extends Controller {
   }
 
   private initializeRoutes() {
-    // auth
+    // Get player match history
+    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerMatchHistoryRequest), initDatabase, this.getPlayerMatchHistory, response, releaseDatabase);
+
+    // Submit game result
     this.router.post(`${this.path}`, authorizeValidate, parameterValidate(SubmitGameResultRequest), initDatabase, this.submitGameResult, response, releaseDatabase);
   }
 
@@ -83,6 +86,29 @@ class GamesController extends Controller {
         data: {
           gameId,
           ratingPointTransition: req.player.playerId === calculatedRatings.winner.playerId ? calculatedRatings.winner.ratingTransition : calculatedRatings.loser.ratingTransition,
+        },
+      }
+    } catch (error) {
+      console.log(error);
+      res.responseError = error;
+    }
+    return next();
+  }
+
+  private getPlayerMatchHistory = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+      const params = req.requestParams as GetPlayerMatchHistoryRequest;
+
+      const rawMatchHistoryList = await this.gamesService.getPlayerMatchHistory(params.playerId, params.page);
+      const total = await this.gamesService.getCountOfMatchHistory(params.playerId);
+      const matchHistoryList = this.gamesService.formatMatchHistory(rawMatchHistoryList);
+
+      res.responseData = {
+        code: 200,
+        message: 'Success',
+        data: {
+          total,
+          games: matchHistoryList,
         },
       }
     } catch (error) {

@@ -32,7 +32,7 @@ class SlackController extends Controller {
   }
 
   private initializeRoutes() {
-    // auth
+    // slack app handler
     this.router.post(`${this.path}`, initDatabase, this.getAuthToken, response, releaseDatabase);
   }
 

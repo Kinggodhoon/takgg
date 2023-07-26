@@ -3,7 +3,7 @@ import EloRank from 'elo-rank';
 import { Database, InputParameter } from '../../database/database';
 
 import { PlayerRating } from '../players/model/players.model';
-import { GameInfo, GameResult, GameStatus, RatingHistory } from './model/games.model';
+import { GameInfo, GameResult, GameStatus, MatchHistory, MatchHistoryRaw, RatingHistory } from './model/games.model';
 
 class GamesService {
   public calculateRating = (ratings: {
@@ -35,6 +35,111 @@ class GamesService {
         ratingTransition: loserRating - ratings.loser.ratingPoint,
       },
     }
+  }
+
+  public formatMatchHistory = (rawMatchHistoryList: Array<MatchHistoryRaw>): Array<MatchHistory> => {
+    const matchHistoryList: Array<MatchHistory> = []
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const matchHistory of rawMatchHistoryList) {
+      matchHistoryList.push({
+        gameId: matchHistory.gameId,
+        isWinner: matchHistory.isWinner,
+        status: matchHistory.status,
+        ratingTransition: matchHistory.ratingTransition,
+        winner: {
+          playerId: matchHistory.winnerPlayerId,
+          displayName: matchHistory.winnerDisplayName,
+          profileImage: matchHistory.winnerProfileImage,
+          score: matchHistory.gameResult[0].playerId === matchHistory.winnerPlayerId ? matchHistory.gameResult[0].score : matchHistory.gameResult[1].score,
+        },
+        loser: {
+          playerId: matchHistory.loserPlayerId,
+          displayName: matchHistory.loserDisplayName,
+          profileImage: matchHistory.loserProfileImage,
+          score: matchHistory.gameResult[0].playerId === matchHistory.loserPlayerId ? matchHistory.gameResult[0].score : matchHistory.gameResult[1].score,
+        },
+      });
+    }
+
+    return matchHistoryList;
+  }
+
+  public getCountOfMatchHistory = async (playerId: string): Promise<number> => {
+    const query = `
+      SELECT
+        COUNT(*) as "count"
+      FROM games g
+      WHERE (g.winner_player_id = @playerId OR g.loser_player_id = @playerId)
+    `;
+
+    const inputParams: InputParameter = {
+      playerId: {
+        value: playerId,
+        type: 'VARCHAR',
+      },
+    }
+
+    const result = await Database.prepareExcute<{ count: number }>({
+      query,
+      inputParams,
+    });
+
+    return result![0].count;
+  }
+
+  public getPlayerMatchHistory = async (playerId: string, page: number): Promise<Array<MatchHistoryRaw>> => {
+    const query = `
+      SELECT
+        g.game_id as "gameId"
+        ,CASE WHEN g.winner_player_id = @playerId THEN true ELSE false END as "isWinner"
+        ,g.status as "status"
+        ,rh.rating_transition as "ratingTransition"
+        ,g.winner_player_id as "winnerPlayerId"
+        ,winner.display_name as "winnerDisplayName"
+        ,winner.profile_image as "winnerProfileImage"
+        ,g.loser_player_id as "loserPlayerId"
+        ,winner.display_name as "loserDisplayName"
+        ,winner.profile_image as "loserProfileImage"
+        ,g.result as "gameResult"
+      FROM games g
+      JOIN (
+        SELECT
+          player_id
+          ,display_name
+          ,profile_image
+        FROM player
+      ) winner ON (winner.player_id = g.winner_player_id)
+      JOIN (
+        SELECT
+          player_id
+          ,display_name
+          ,profile_image
+        FROM player
+      ) loser ON (loser.player_id = g.loser_player_id)
+      JOIN rating_history rh ON (rh.game_id = g.game_id AND rh.player_id = @playerId)
+      WHERE (g.winner_player_id = @playerId OR g.loser_player_id = @playerId)
+      ORDER BY g.create_at DESC
+      LIMIT 10 OFFSET @offset
+    `;
+
+    const inputParams: InputParameter = {
+      playerId: {
+        value: playerId,
+        type: 'VARCHAR',
+      },
+      offset: {
+        value: (page - 1) * 10,
+        type: 'INT4',
+      },
+    }
+
+    const matchHistoryList = await Database.prepareExcute<MatchHistoryRaw>({
+      query,
+      inputParams,
+    });
+
+    return matchHistoryList || [];
   }
 
   public getValidatingGameInfo = async (gameId: number): Promise<GameInfo | null> => {

@@ -21,8 +21,9 @@ class PlayersController extends Controller {
   }
 
   private initializeRoutes() {
-    // auth
+    // Get all players
     this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getPlayerList, response, releaseDatabase);
+    // Get player
     this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerProfileRequest), initDatabase, this.getPlayer, response, releaseDatabase);
   }
 

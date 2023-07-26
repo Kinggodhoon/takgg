@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { IsValidGameResult } from '../../../decorator/gameResult.decorator';
 
 export enum GameStatus {
@@ -45,5 +45,54 @@ export class SubmitGameResultRequest {
     resultList: Array<GameResult>,
   ) {
     this.resultList = resultList;
+  }
+}
+
+export interface MatchHistoryRaw {
+  gameId: number;
+  isWinner: boolean;
+  status: GameStatus;
+  ratingTransition: number;
+  winnerPlayerId: string;
+  winnerDisplayName: string;
+  winnerProfileImage: string;
+  loserPlayerId: string;
+  loserDisplayName: string;
+  loserProfileImage: string;
+  gameResult: Array<GameResult>
+}
+
+export interface MatchHistory {
+  gameId: number;
+  isWinner: boolean;
+  status: GameStatus;
+  ratingTransition: number;
+  winner: {
+    playerId: string;
+    displayName: string;
+    profileImage: string;
+    score: number;
+  }
+  loser: {
+    playerId: string;
+    displayName: string;
+    profileImage: string;
+    score: number;
+  }
+}
+
+export class GetPlayerMatchHistoryRequest {
+  @IsString()
+  @IsDefined()
+  public playerId: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsDefined()
+  public page: number;
+
+  constructor(playerId: string, page: number) {
+    this.playerId = playerId;
+    this.page = page;
   }
 }

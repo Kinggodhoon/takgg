@@ -19,7 +19,49 @@ class SlackService {
   public sendAuthTokenMessage = async (player: { playerId: string, displayName: string }, oneTimeToken: string): Promise<boolean> => {
     await this.slackClient.chat.postMessage({
       channel: player.playerId,
-      text: `Hi ${player.displayName}! Here's your [TakGG] Auth secret key! \n\n<SecretKey: ${oneTimeToken}> \n\nIf you don't have the [TakGG] Application, DM Hoon!`,
+      blocks: [
+        {
+          type: 'divider',
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `*Hi ${player.displayName}!*`,
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: "*Here's your [TakGG] Auth secret key!*",
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `> *SecretKey: *\`${oneTimeToken}\``,
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: '*Good luck with your future games! :table_tennis_paddle_and_ball:*',
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: "_If you don't have the [TakGG] Application, DM Hoon!_",
+          },
+        },
+        {
+          type: 'divider',
+        },
+      ],
     });
 
     return true;
@@ -103,6 +145,50 @@ class SlackService {
       ],
     });
 
+    return true;
+  }
+
+  public sendSuccessCallbackMessage = async (playerId: string): Promise<boolean> => {
+    await this.slackClient.chat.postMessage({
+      channel: playerId,
+      blocks: [
+        {
+          type: 'divider',
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: '*Applied successfully.*\n *Thanks for the response:smile:*',
+          },
+        },
+        {
+          type: 'divider',
+        },
+      ],
+    });
+    return true;
+  }
+
+  public sendErrorMessage = async (playerId: string, errorMessage: string): Promise<boolean> => {
+    await this.slackClient.chat.postMessage({
+      channel: playerId,
+      blocks: [
+        {
+          type: 'divider',
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `*Sorry something has wrong:face_with_head_bandage:*\n\`Message: ${errorMessage}\`\n> Try again later or continue to run into issues, Please report to Hoon with DM.`,
+          },
+        },
+        {
+          type: 'divider',
+        },
+      ],
+    });
     return true;
   }
 }

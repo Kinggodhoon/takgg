@@ -9,6 +9,8 @@ import PlayersService from '../players/players.service';
 import AuthService from '../auth/auth.service';
 import response from '../../middleware/response';
 import SlackService from './slack.service';
+import GamesService from '../games/games.service';
+import { GameStatus } from '../games/model/games.model';
 
 class SlackController extends Controller {
   public readonly path = '/slack';
@@ -17,32 +19,35 @@ class SlackController extends Controller {
   private slackService: SlackService;
   private playersService: PlayersService;
   private authService: AuthService;
+  private gamesService: GamesService;
 
   constructor() {
     super();
     this.initializeRoutes();
+
     this.slackService = new SlackService();
     this.playersService = new PlayersService();
     this.authService = new AuthService();
+    this.gamesService = new GamesService();
   }
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}`, initDatabase, this.getAuthToken, releaseDatabase, response);
+    this.router.post(`${this.path}`, initDatabase, this.getAuthToken, response, releaseDatabase);
   }
 
   private getAuthToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-      // Get request params
-      const params: SlackEventParams = JSON.parse(req.body.payload);
+    // Get request params
+    const params: SlackEventParams = JSON.parse(req.body.payload);
 
+    try {
       // Validating slack request type
       if (!Object.values(SlackActionType).includes(params.actions[0].action_id)) throw new HttpException(400, 'Invalid Slack Request');
 
-      const { action_id: actionsId } = params.actions[0];
+      const { action_id: actionId } = params.actions[0];
 
       // Generate auth token flows
-      if (actionsId === SlackActionType.GET_AUTH_TOKEN) {
+      if (actionId === SlackActionType.GET_AUTH_TOKEN) {
         // Get user profile
         const getUserProfileReponse = await this.slackService.getUserProfile(params.user.id);
         const { profile: slackUserProfile } = getUserProfileReponse;
@@ -52,8 +57,8 @@ class SlackController extends Controller {
         const playerInfo = await this.playersService.getPlayerInfo(params.user.id);
 
         const oneTimeToken = uuid().replace(/-/g, '');
-        await Database.startTransaction();
         try {
+          await Database.startTransaction();
           if (!playerInfo) {
             await this.playersService.insertPlayerInfo({
               playerId: params.user.id,
@@ -70,6 +75,7 @@ class SlackController extends Controller {
           await Database.commitTransaction();
         } catch {
           await Database.rollbackTransaction();
+          throw new HttpException(409, 'Save User Data Error');
         }
 
         // Response slack DM
@@ -79,17 +85,49 @@ class SlackController extends Controller {
         }, oneTimeToken);
       }
 
-      if (actionsId === SlackActionType.VALIDATED_GAME) {
+      if (actionId === SlackActionType.VALIDATED_GAME) {
+        const gameId = +params.actions[0].value;
+        const gameInfo = await this.gamesService.getValidatingGameInfo(gameId)
+        if (!gameInfo) throw new HttpException(404, 'Game Info Not Found');
 
+        const ratingHistoryList = await this.gamesService.getRatingHistoryList(gameId);
+
+        try {
+          await Database.startTransaction();
+
+          await this.gamesService.updateGameStatus(gameId, GameStatus.VALIDATED);
+          await Promise.all(ratingHistoryList.map((ratingHistory) => this.playersService.updatePlayerRating(ratingHistory.playerId, ratingHistory.ratingTransition)));
+
+          await Database.commitTransaction();
+        } catch {
+          await Database.rollbackTransaction();
+          throw new HttpException(409, 'Update Data Error: Validated');
+        }
+
+        await this.slackService.sendSuccessCallbackMessage(params.user.id);
       }
 
-      if (actionsId === SlackActionType.INVALID_GAME) {
+      if (actionId === SlackActionType.INVALID_GAME) {
+        const gameId = +params.actions[0].value;
+        const gameInfo = await this.gamesService.getValidatingGameInfo(gameId)
+        if (!gameInfo) throw new HttpException(404, 'Game Info Not Found');
 
+        try {
+          await Database.startTransaction();
+
+          await this.gamesService.updateGameStatus(gameId, GameStatus.INVALID);
+
+          await Database.commitTransaction();
+        } catch {
+          await Database.rollbackTransaction();
+          throw new HttpException(409, 'Update Data Error: Invalid');
+        }
+
+        await this.slackService.sendSuccessCallbackMessage(params.user.id);
       }
-
     } catch (error) {
       console.log(error);
-      // TODO: send something has wrong slack message
+      await this.slackService.sendErrorMessage(params.user.id, (error as HttpException).message);
     }
     return next();
   }

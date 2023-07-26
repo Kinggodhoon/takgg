@@ -1,7 +1,7 @@
 import express from 'express';
 
 import Controller from '../controller';
-import { initDatabase, releaseDatabase } from '../../database/database';
+import { Database, initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
 
@@ -27,7 +27,7 @@ class AuthController extends Controller {
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}`, parameterValidate(AuthRequest), initDatabase, this.auth, releaseDatabase, response);
+    this.router.post(`${this.path}`, parameterValidate(AuthRequest), initDatabase, this.auth, response, releaseDatabase);
   }
 
   private auth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -49,7 +49,16 @@ class AuthController extends Controller {
         profileImage: playerProfile.profileImage,
       } as PlayerInfo);
 
-      await this.authService.deleteOnetimeToken(authTokenInfo);
+      // TODO Redis cache
+      try {
+        await Database.startTransaction();
+        // remove one time token
+        await this.authService.deleteOnetimeToken(authTokenInfo);
+        await Database.commitTransaction();
+      } catch {
+        await Database.rollbackTransaction();
+        throw new HttpException(409, 'OneTimeToken Sync Error');
+      }
 
       res.responseData = {
         code: 200,

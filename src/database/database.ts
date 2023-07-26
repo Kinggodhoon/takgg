@@ -64,7 +64,9 @@ export type PrameterType =
   'REGDICTIONARY' |
   'JSONB' |
   'REGNAMESPACE' |
-  'REGROLE';
+  'REGROLE' |
+  'type_game_status' |
+  'type_user_style';
 
 export interface InputParameter {
   [key: string]: {
@@ -162,14 +164,12 @@ export class Database {
   }
 }
 
-export const initDatabase = async (request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> => {
+export const initDatabase = async (request: express.Request, response: express.Response, next: express.NextFunction) => {
   await Database.initDatabase();
 
-  next();
+  return next();
 }
 
-export const releaseDatabase = async (request: express.Request, response: express.Response, next: express.NextFunction): Promise<void> => {
+export const releaseDatabase = async (request: express.Request, response: express.Response): Promise<void> => {
   await Database.release();
-
-  next();
 }

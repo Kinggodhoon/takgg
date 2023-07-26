@@ -30,12 +30,14 @@ class GamesController extends Controller {
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}`, authorizeValidate, parameterValidate(SubmitGameResultRequest), initDatabase, this.submitGameResult, releaseDatabase, response);
+    this.router.post(`${this.path}`, authorizeValidate, parameterValidate(SubmitGameResultRequest), initDatabase, this.submitGameResult, response, releaseDatabase);
   }
 
   private submitGameResult = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
       const params = req.requestParams as SubmitGameResultRequest;
+
+      if (_.findIndex(params.resultList, { playerId: req.player.playerId }) === -1) throw new HttpException(401, 'Unauthorized');
 
       const playerRatingList = await this.playersService.getPlayerRatingList(params.resultList.map((r) => r.playerId));
       if (playerRatingList.length < 2) throw new HttpException(400, 'Invalid Parameter Error');
@@ -78,7 +80,10 @@ class GamesController extends Controller {
       res.responseData = {
         code: 200,
         message: 'Success',
-        data: gameResultList,
+        data: {
+          gameId,
+          ratingPointTransition: req.player.playerId === calculatedRatings.winner.playerId ? calculatedRatings.winner.ratingTransition : calculatedRatings.loser.ratingTransition,
+        },
       }
     } catch (error) {
       console.log(error);

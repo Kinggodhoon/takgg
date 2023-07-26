@@ -3,7 +3,7 @@ import EloRank from 'elo-rank';
 import { Database, InputParameter } from '../../database/database';
 
 import { PlayerRating } from '../players/model/players.model';
-import { GameResult } from './model/games.model';
+import { GameInfo, GameResult, GameStatus, RatingHistory } from './model/games.model';
 
 class GamesService {
   public calculateRating = (ratings: {
@@ -35,6 +35,87 @@ class GamesService {
         ratingTransition: loserRating - ratings.loser.ratingPoint,
       },
     }
+  }
+
+  public getValidatingGameInfo = async (gameId: number): Promise<GameInfo | null> => {
+    const query = `
+      SELECT
+        game_id as "gameId"
+        ,winner_player_id as "winnerPlayerId"
+        ,loser_player_id as "loserPlayerId"
+      FROM games
+      WHERE game_id = @gameId
+        AND status = @gameStatus
+    `;
+
+    const inputParams: InputParameter = {
+      gameId: {
+        value: gameId,
+        type: 'INT4',
+      },
+      gameStatus: {
+        value: GameStatus.VALIDATING,
+        type: 'type_game_status',
+      },
+    }
+
+    const gameInfo = await Database.prepareExcute<GameInfo>({
+      query,
+      inputParams,
+    });
+
+    return !gameInfo || gameInfo.length < 1 ? null : gameInfo[0];
+  }
+
+  public getRatingHistoryList = async (gameId: number): Promise<Array<RatingHistory>> => {
+    const query = `
+      SELECT
+        game_id as "gameId"
+        ,player_id as "playerId"
+        ,rating_transition as "ratingTransition"
+      FROM rating_history
+      WHERE game_id = @gameId
+    `;
+
+    const inputParams: InputParameter = {
+      gameId: {
+        value: gameId,
+        type: 'INT4',
+      },
+    }
+
+    const ratingHistoryList = await Database.prepareExcute<RatingHistory>({
+      query,
+      inputParams,
+    });
+
+    return ratingHistoryList || [];
+  }
+
+  public updateGameStatus = async (gameId: number, gameStatus: GameStatus): Promise<boolean> => {
+    const query = `
+      UPDATE games
+      SET status = @gameStatus
+      WHERE game_id = @gameId
+    `;
+
+    const inputParams: InputParameter = {
+      gameStatus: {
+        value: gameStatus,
+        type: 'type_game_status',
+      },
+      gameId: {
+        value: gameId,
+        type: 'INT4',
+      },
+    }
+
+    await Database.prepareExcute<GameInfo>({
+      query,
+      inputParams,
+    });
+
+    return true;
   }
 
   public insertGameResult = async (

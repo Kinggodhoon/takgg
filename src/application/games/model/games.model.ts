@@ -3,27 +3,22 @@ import { Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { IsValidGameResult } from '../../../decorator/gameResult.decorator';
 
-export enum PlayerStyle {
-  SHAKE = 'shake',
-  PENHOLD = 'penhold',
+export enum GameStatus {
+  VALIDATING = 'validating',
+  VALIDATED = 'validated',
+  INVALID = 'invalid',
 }
 
-export interface PlayerInfo {
-  playerId: string;
-  realName: string;
-  displayName: string;
-  profileImage: string;
+export interface GameInfo {
+  gameId: number;
+  winnerPlayerId: string;
+  loserPlayerId: string;
 }
 
-export interface PlayerProfile {
+export interface RatingHistory {
+  gameId: number;
   playerId: string;
-  realName: string;
-  displayName: string;
-  profileImage: string;
-  style: PlayerStyle;
-  racket: string | null;
-  rubberList: string | Array<string> | null;
-  bestRatingPoting: number;
+  ratingTransition: number;
 }
 
 export class GameResult {

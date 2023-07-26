@@ -105,10 +105,12 @@ class PlayersService {
   public getPlayerRatingList = async (playerIdList: Array<string>): Promise<Array<PlayerRating>> => {
     const query = `
       SELECT
-        player_id as "playerId"
-        ,rating_point as "ratingPoint"
-      FROM player_profile
-      WHERE player_id IN ('${playerIdList.join("','")}')
+        pp.player_id as "playerId"
+        ,p.display_name as "displayName"
+        ,pp.rating_point as "ratingPoint"
+      FROM player_profile pp
+      JOIN player p ON (p.player_id = pp.player_id)
+      WHERE pp.player_id IN ('${playerIdList.join("','")}')
     `;
 
     const result = await Database.prepareExcute<PlayerRating>({
@@ -134,7 +136,7 @@ class PlayersService {
       left JOIN rackets rk ON (rk.racket_id = pp.racket_id)
       left JOIN rubbers rb ON (rb.rubber_id = ANY(pp.rubber_id_list))
       WHERE p.player_id = @playerId
-      group by p.player_id, pp.style, rk.name
+      group by p.player_id, pp.style, rk.name, pp.rating_point
     `;
 
     const inputParams: InputParameter = {
@@ -154,6 +156,32 @@ class PlayersService {
     // Formatting rubber list
     result[0].rubberList = result[0].rubberList ? (result[0].rubberList! as string).split(',') : null;
     return result[0];
+  }
+
+  public updatePlayerRating = async (playerId: string, ratingTransition: number): Promise<boolean> => {
+    const query = `
+      UPDATE player_profile
+      SET rating_point = (rating_point + @ratingTransition)
+      where player_id = @playerId
+    `;
+
+    const inputParams: InputParameter = {
+      ratingTransition: {
+        value: ratingTransition,
+        type: 'INT4',
+      },
+      playerId: {
+        value: playerId,
+        type: 'VARCHAR',
+      },
+    };
+
+    await Database.prepareExcute<PlayerProfile>({
+      query,
+      inputParams,
+    });
+
+    return true;
   }
 }
 

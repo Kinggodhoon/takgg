@@ -1,5 +1,5 @@
 import { Database, InputParameter } from '../../database/database';
-import { PlayerInfo, PlayerProfile, PlayerRating } from './model/players.model';
+import { PlayerInfo, PlayerProfile, PlayerRating, UpdatePlayerProfileRequest } from './model/players.model';
 
 class PlayersService {
   public insertPlayerInfo = async (params: PlayerInfo): Promise<boolean> => {
@@ -158,11 +158,50 @@ class PlayersService {
     return result[0];
   }
 
+  public updatePlayerProfile = async (playerId: string, updateParams: UpdatePlayerProfileRequest): Promise<boolean> => {
+    const inputParams: InputParameter = {
+      playerId: {
+        value: playerId,
+        type: 'VARCHAR',
+      },
+    }
+
+    const updateQueryList: Array<string> = [];
+    if (updateParams.style) {
+      updateQueryList.push('style = @style');
+      Object.assign(inputParams.style = {
+        value: updateParams.style,
+        type: 'type_user_style',
+      });
+    }
+    if (updateParams.racket) {
+      updateQueryList.push('racket_id = @racketId');
+      Object.assign(inputParams.racketId = {
+        value: updateParams.racket,
+        type: 'INT4',
+      });
+    }
+    if (updateParams.rubbers) updateQueryList.push(`rubber_id_list = '{${updateParams.rubbers.join(',')}}'`);
+
+    const query = `
+      UPDATE player_profile
+      SET ${updateQueryList.join(', ')}
+      WHERE player_id = @playerId
+    `;
+
+    await Database.prepareExcute<void>({
+      query,
+      inputParams,
+    });
+
+    return true;
+  }
+
   public updatePlayerRating = async (playerId: string, ratingTransition: number): Promise<boolean> => {
     const query = `
       UPDATE player_profile
       SET rating_point = (rating_point + @ratingTransition)
-      where player_id = @playerId
+      WHERE player_id = @playerId
     `;
 
     const inputParams: InputParameter = {
@@ -176,7 +215,7 @@ class PlayersService {
       },
     };
 
-    await Database.prepareExcute<PlayerProfile>({
+    await Database.prepareExcute<void>({
       query,
       inputParams,
     });

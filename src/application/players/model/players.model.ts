@@ -1,4 +1,4 @@
-import { IsDefined, IsString } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsDefined, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export enum PlayerStyle {
   SHAKE = 'shake',
@@ -39,5 +39,31 @@ export class GetPlayerProfileRequest {
     playerId: string,
   ) {
     this.playerId = playerId;
+  }
+}
+
+export class UpdatePlayerProfileRequest {
+  @IsEnum(PlayerStyle)
+  @IsOptional()
+  public style?: PlayerStyle;
+
+  @IsNumber()
+  @IsOptional()
+  public racket?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(0)
+  @ArrayMaxSize(2)
+  public rubbers?: Array<number>;
+
+  constructor(
+    style?: PlayerStyle,
+    racket?: number,
+    rubbers?: Array<number>,
+  ) {
+    this.style = style;
+    this.racket = racket;
+    this.rubbers = rubbers;
   }
 }

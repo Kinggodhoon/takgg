@@ -99,8 +99,8 @@ class GamesService {
         ,winner.display_name as "winnerDisplayName"
         ,winner.profile_image as "winnerProfileImage"
         ,g.loser_player_id as "loserPlayerId"
-        ,winner.display_name as "loserDisplayName"
-        ,winner.profile_image as "loserProfileImage"
+        ,loser.display_name as "loserDisplayName"
+        ,loser.profile_image as "loserProfileImage"
         ,g.result as "gameResult"
       FROM games g
       JOIN (

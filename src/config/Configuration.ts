@@ -1,7 +1,7 @@
 import { PoolConfig } from 'pg';
 
 export enum SupportedEnvironment {
-  development = 'development',
+  development = 'dev',
 }
 
 export interface Configuration {

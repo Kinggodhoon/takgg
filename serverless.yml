@@ -3,7 +3,8 @@ service: takgg
 provider:
   name: aws
   runtime: nodejs14.x
-  # profile: eb-personal
+  profile: personal
+  region: ap-northeast-2
   environment:
     STAGE: ${opt:stage, self:provider.stage}
     PROFILE: ${opt:profile, self:provider.profile}

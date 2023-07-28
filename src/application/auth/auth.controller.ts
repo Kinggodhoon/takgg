@@ -27,7 +27,7 @@ class AuthController extends Controller {
 
   private initializeRoutes() {
     // auth
-    this.router.post(`${this.path}`, parameterValidate(AuthRequest), initDatabase, this.auth, response, releaseDatabase);
+    this.router.post(`${this.path}`, parameterValidate(AuthRequest), initDatabase, this.auth, response);
   }
 
   private auth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

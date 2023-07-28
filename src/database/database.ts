@@ -114,10 +114,6 @@ export class Database {
     Database.client = await Database.pool.connect();
   }
 
-  static async release(): Promise<void> {
-    await Database.pool.end();
-  }
-
   static async startTransaction(): Promise<void> {
     await Database.client.query('BEGIN');
   }
@@ -168,8 +164,4 @@ export const initDatabase = async (request: express.Request, response: express.R
   await Database.initDatabase();
 
   return next();
-}
-
-export const releaseDatabase = async (request: express.Request, response: express.Response): Promise<void> => {
-  await Database.release();
 }

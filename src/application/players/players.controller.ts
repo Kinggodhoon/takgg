@@ -23,11 +23,11 @@ class PlayersController extends Controller {
 
   private initializeRoutes() {
     // Get all players
-    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getPlayerList, response, releaseDatabase);
+    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getPlayerList, response);
     // Get player
-    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerProfileRequest), initDatabase, this.getPlayer, response, releaseDatabase);
+    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerProfileRequest), initDatabase, this.getPlayer, response);
     // Update player profile
-    this.router.patch(`${this.path}`, authorizeValidate, parameterValidate(UpdatePlayerProfileRequest), initDatabase, this.updatePlayerProfile, response, releaseDatabase);
+    this.router.patch(`${this.path}`, authorizeValidate, parameterValidate(UpdatePlayerProfileRequest), initDatabase, this.updatePlayerProfile, response);
   }
 
   private getPlayerList = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

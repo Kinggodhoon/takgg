@@ -21,7 +21,7 @@ class RankController extends Controller {
 
   private initializeRoutes() {
     // Get ranking
-    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getRanking, response, releaseDatabase);
+    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getRanking, response);
   }
 
   private getRanking = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

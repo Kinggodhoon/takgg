@@ -30,10 +30,10 @@ class GamesController extends Controller {
 
   private initializeRoutes() {
     // Get player match history
-    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerMatchHistoryRequest), initDatabase, this.getPlayerMatchHistory, response, releaseDatabase);
+    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerMatchHistoryRequest), initDatabase, this.getPlayerMatchHistory, response);
 
     // Submit game result
-    this.router.post(`${this.path}`, authorizeValidate, parameterValidate(SubmitGameResultRequest), initDatabase, this.submitGameResult, response, releaseDatabase);
+    this.router.post(`${this.path}`, authorizeValidate, parameterValidate(SubmitGameResultRequest), initDatabase, this.submitGameResult, response);
   }
 
   private submitGameResult = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

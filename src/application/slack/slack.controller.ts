@@ -33,7 +33,7 @@ class SlackController extends Controller {
 
   private initializeRoutes() {
     // slack app handler
-    this.router.post(`${this.path}`, initDatabase, this.getAuthToken, response, releaseDatabase);
+    this.router.post(`${this.path}`, initDatabase, this.getAuthToken, response);
   }
 
   private getAuthToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

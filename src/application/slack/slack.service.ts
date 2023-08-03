@@ -191,6 +191,104 @@ class SlackService {
     });
     return true;
   }
+
+  public publishAppHome = async (playerId: string): Promise<boolean> => {
+    await this.slackClient.views.publish({
+      user_id: playerId,
+      view: {
+        type: 'home',
+        blocks: [
+          {
+            type: 'header',
+            text: {
+              type: 'plain_text',
+              text: "Hey :wave: I'm a PlayDapp pingpong manager!:table_tennis_paddle_and_ball:",
+              emoji: true,
+            },
+          },
+          {
+            type: 'divider',
+          },
+          {
+            type: 'header',
+            text: {
+              type: 'plain_text',
+              text: "You can use the rating system and search the player's match history! \nFollow the instructions below if you want to use it!",
+              emoji: true,
+            },
+          },
+          {
+            type: 'divider',
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `:one: *If you don't have TakGG mobile application?*\n>Request <@${Config.getConfig().SLACK_BOT_CONFIG.ADMIN_USER_ID}> for a mobile application in DM!`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':two: *Get Authentication key and login to TakGG Application!*\n>Log in to TakGG using Authentication key!\n>Identification is based on the user information of Slack.',
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '>*If you need a Authentication key?*\n>*Click right button* :arrow_right:',
+            },
+            accessory: {
+              type: 'button',
+              text: {
+                type: 'plain_text',
+                emoji: true,
+                text: 'Get Auth Token :unlock:',
+              },
+              value: 'getAuthToken',
+              action_id: 'getAuthToken',
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':three: *Edit your profile in App!*\n>Customize your profile!\n>You can edit and show your paddle style, racket, and rubber to everyone!',
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: ':four: *Start up your pingpong career!*\n>Start games and submit your game results!\n>Try to go higher!\n>Good Luck Have Fun :fire:',
+            },
+          },
+          {
+            type: 'divider',
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '_TakGG team always supports your victory._',
+            },
+          },
+          {
+            type: 'context',
+            elements: [
+              {
+                type: 'mrkdwn',
+                text: `:eyes: If you have any Complaints, Ideas, Bug or Player Reports? DM <@${Config.getConfig().SLACK_BOT_CONFIG.ADMIN_USER_ID}>\n`,
+              },
+            ],
+          },
+        ],
+      },
+    });
+    return true;
+  }
 }
 
 export default SlackService;

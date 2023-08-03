@@ -2,7 +2,7 @@ import express from 'express';
 import { v4 as uuid } from 'uuid';
 
 import Controller from '../controller';
-import { Database, initDatabase, releaseDatabase } from '../../database/database';
+import { Database, initDatabase } from '../../database/database';
 import { SlackActionType, SlackEventParams } from './model/slack.model';
 import { HttpException } from '../../types/exception';
 import PlayersService from '../players/players.service';
@@ -33,10 +33,11 @@ class SlackController extends Controller {
 
   private initializeRoutes() {
     // slack app handler
-    this.router.post(`${this.path}`, initDatabase, this.getAuthToken, response);
+    this.router.post(`${this.path}`, initDatabase, this.buttonEventHandler, response);
+    this.router.post(`${this.path}/home`, initDatabase, this.publishAppHome, response);
   }
 
-  private getAuthToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  private buttonEventHandler = async (req: express.Request, res: express.Response) => {
     // Get request params
     const params: SlackEventParams = JSON.parse(req.body.payload);
 
@@ -129,7 +130,30 @@ class SlackController extends Controller {
       console.log(error);
       await this.slackService.sendErrorMessage(params.user.id, (error as HttpException).message);
     }
-    return next();
+    res.status(200).json({
+      message: 'Success',
+    });
+  }
+
+  private publishAppHome = async (req: express.Request, res: express.Response) => {
+    // Get request params
+    const { event: slackEvent } = req.body;
+
+    try {
+      if (slackEvent.tab !== 'home') throw new HttpException(409, 'Home tab event only');
+      // if (slackEvent.view) throw new HttpException(409, 'Already mapped player');
+
+      await this.slackService.publishAppHome(slackEvent.user);
+    } catch (error) {
+      res.status(200).json({
+        message: 'failed',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Success',
+    });
   }
 }
 

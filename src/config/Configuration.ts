@@ -12,5 +12,6 @@ export interface Configuration {
 
   readonly SLACK_BOT_CONFIG: {
     BOT_TOKEN: string;
+    ADMIN_USER_ID: string;
   };
 }

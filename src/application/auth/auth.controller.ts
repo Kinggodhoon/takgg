@@ -1,7 +1,7 @@
 import express from 'express';
 
 import Controller from '../controller';
-import { Database, initDatabase, releaseDatabase } from '../../database/database';
+import { Database, initDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
 

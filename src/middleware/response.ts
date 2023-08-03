@@ -31,7 +31,7 @@ const responseEnum: { [key: string]: { message: string } } = {
 const getResponseMessage = (code: number): string => responseEnum[code]?.message;
 
 // Response middleware
-const response = async (request: express.Request, response: express.Response, next: express.NextFunction) => {
+const response = async (request: express.Request, response: express.Response) => {
   const { responseData, responseError } = response;
   // Successfully Response
   if (!responseError) {
@@ -41,7 +41,7 @@ const response = async (request: express.Request, response: express.Response, ne
       data: responseData?.data || null,
     });
 
-    return next();
+    return;
   }
 
   // Error Response
@@ -62,7 +62,6 @@ const response = async (request: express.Request, response: express.Response, ne
     message: errorResponse.message,
     data: null,
   });
-  return next();
 }
 
 export default response;

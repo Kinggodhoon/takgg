@@ -33,8 +33,8 @@ class SlackController extends Controller {
 
   private initializeRoutes() {
     // slack app handler
-    this.router.post(`${this.path}`, initDatabase, this.buttonEventHandler, response);
-    this.router.post(`${this.path}/home`, initDatabase, this.publishAppHome, response);
+    this.router.post(`${this.path}`, initDatabase, this.buttonEventHandler);
+    this.router.post(`${this.path}/home`, this.publishAppHome);
   }
 
   private buttonEventHandler = async (req: express.Request, res: express.Response) => {

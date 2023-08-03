@@ -141,7 +141,7 @@ class SlackController extends Controller {
 
     try {
       if (slackEvent.tab !== 'home') throw new HttpException(409, 'Home tab event only');
-      // if (slackEvent.view) throw new HttpException(409, 'Already mapped player');
+      if (slackEvent.view) throw new HttpException(409, 'Already mapped player');
 
       await this.slackService.publishAppHome(slackEvent.user);
     } catch (error) {

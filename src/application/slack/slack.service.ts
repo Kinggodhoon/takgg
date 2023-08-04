@@ -284,6 +284,24 @@ class SlackService {
               },
             ],
           },
+          {
+            type: 'divider',
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '*<https://www.buymeacoffee.com/dodongdang|Buy coffee for TakGG team>*\nPlease help TakGG team pay for the server cost, and develop better!',
+            },
+            accessory: {
+              type: 'image',
+              image_url: 'https://media4.giphy.com/media/TDQOtnWgsBx99cNoyH/giphy.gif',
+              alt_text: 'Buy coffee for TakGG team thumbnail',
+            },
+          },
+          {
+            type: 'divider',
+          },
         ],
       },
     });

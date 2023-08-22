@@ -4,6 +4,7 @@ import GamesController from '../application/games/games.controller';
 import PlayersController from '../application/players/players.controller';
 import SlackController from '../application/slack/slack.controller';
 import RankController from '../application/rank/rank.controller';
+import ItemsController from '../application/items/items.controller';
 
 const v1Router = Router();
 
@@ -13,6 +14,7 @@ const routes: Array<Router> = [
   new PlayersController().getRouter(),
   new GamesController().getRouter(),
   new RankController().getRouter(),
+  new ItemsController().getRouter(),
 ];
 
 for (const route of routes) {

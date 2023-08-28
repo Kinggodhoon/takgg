@@ -8,6 +8,7 @@ class ItemsService {
       SELECT
         *
       FROM rackets
+      ORDER BY name ASC
     `;
 
     const racketList = await Database.prepareExcute<Racket>({
@@ -24,6 +25,7 @@ class ItemsService {
       SELECT
         *
       FROM rubbers
+      ORDER BY name ASC
     `;
 
     const rubberList = await Database.prepareExcute<Rubber>({

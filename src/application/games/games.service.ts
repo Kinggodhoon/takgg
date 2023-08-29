@@ -71,12 +71,17 @@ class GamesService {
         COUNT(*) as "count"
       FROM games g
       WHERE (g.winner_player_id = @playerId OR g.loser_player_id = @playerId)
+        AND status = @status
     `;
 
     const inputParams: InputParameter = {
       playerId: {
         value: playerId,
         type: 'VARCHAR',
+      },
+      status: {
+        value: GameStatus.VALIDATED,
+        type: 'type_game_status',
       },
     }
 
@@ -119,6 +124,7 @@ class GamesService {
       ) loser ON (loser.player_id = g.loser_player_id)
       JOIN rating_history rh ON (rh.game_id = g.game_id AND rh.player_id = @playerId)
       WHERE (g.winner_player_id = @playerId OR g.loser_player_id = @playerId)
+        AND status = @status
       ORDER BY g.create_at DESC
       LIMIT 10 OFFSET @offset
     `;
@@ -131,6 +137,10 @@ class GamesService {
       offset: {
         value: (page - 1) * 10,
         type: 'INT4',
+      },
+      status: {
+        value: GameStatus.VALIDATED,
+        type: 'type_game_status',
       },
     }
 

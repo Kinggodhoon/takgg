@@ -165,3 +165,8 @@ export const initDatabase = async (request: express.Request, response: express.R
 
   return next();
 }
+
+export const releaseDatabase = async (): Promise<void> => {
+  Database.client.release();
+  Database.pool.end();
+}

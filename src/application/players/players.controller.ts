@@ -1,7 +1,7 @@
 import express from 'express';
 
 import Controller from '../controller';
-import { Database, initDatabase } from '../../database/database';
+import { Database, initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
 import { GetPlayerProfileRequest, UpdatePlayerProfileRequest } from './model/players.model';
@@ -23,9 +23,9 @@ class PlayersController extends Controller {
 
   private initializeRoutes() {
     // Get all players
-    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getPlayerList, response);
+    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getPlayerList, response, releaseDatabase);
     // Get player
-    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerProfileRequest), initDatabase, this.getPlayer, response);
+    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerProfileRequest), initDatabase, this.getPlayer, response, releaseDatabase);
     // Update player profile
     this.router.patch(`${this.path}`, authorizeValidate, parameterValidate(UpdatePlayerProfileRequest), initDatabase, this.updatePlayerProfile, response);
   }

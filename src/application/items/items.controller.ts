@@ -1,7 +1,7 @@
 import express from 'express';
 
 import Controller from '../controller';
-import { initDatabase } from '../../database/database';
+import { initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import ItemsService from './items.service';
 import authorizeValidate from '../../middleware/authorize.validate';
@@ -20,7 +20,7 @@ class ItemsController extends Controller {
 
   private initializeRoutes() {
     // Get all players
-    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getAllItems, response);
+    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getAllItems, response, releaseDatabase);
   }
 
   private getAllItems = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

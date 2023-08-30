@@ -2,7 +2,7 @@ import express from 'express';
 import _ from 'lodash';
 
 import Controller from '../controller';
-import { Database, initDatabase } from '../../database/database';
+import { Database, initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import parameterValidate from '../../middleware/parameter.validate';
 import { GetPlayerMatchHistoryRequest, SubmitGameResultRequest } from './model/games.model';
@@ -30,7 +30,7 @@ class GamesController extends Controller {
 
   private initializeRoutes() {
     // Get player match history
-    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerMatchHistoryRequest), initDatabase, this.getPlayerMatchHistory, response);
+    this.router.get(`${this.path}/:playerId`, authorizeValidate, parameterValidate(GetPlayerMatchHistoryRequest), initDatabase, this.getPlayerMatchHistory, response, releaseDatabase);
 
     // Submit game result
     this.router.post(`${this.path}`, authorizeValidate, parameterValidate(SubmitGameResultRequest), initDatabase, this.submitGameResult, response);

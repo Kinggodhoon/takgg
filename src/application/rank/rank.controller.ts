@@ -1,7 +1,7 @@
 import express from 'express';
 
 import Controller from '../controller';
-import { initDatabase } from '../../database/database';
+import { initDatabase, releaseDatabase } from '../../database/database';
 import response from '../../middleware/response';
 import authorizeValidate from '../../middleware/authorize.validate';
 
@@ -21,7 +21,7 @@ class RankController extends Controller {
 
   private initializeRoutes() {
     // Get ranking
-    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getRanking, response);
+    this.router.get(`${this.path}`, authorizeValidate, initDatabase, this.getRanking, response, releaseDatabase);
   }
 
   private getRanking = async (req: express.Request, res: express.Response, next: express.NextFunction) => {

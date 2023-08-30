@@ -98,7 +98,7 @@ const setInputParams = (query: string, inputParams?: InputParameter): {
 }
 
 export class Database {
-  public static singleton: Database;
+  public static singleton?: Database;
 
   static client: PoolClient;
   static pool: Pool;
@@ -169,4 +169,6 @@ export const initDatabase = async (request: express.Request, response: express.R
 export const releaseDatabase = async (): Promise<void> => {
   Database.client.release();
   Database.pool.end();
+
+  Database.singleton = undefined;
 }

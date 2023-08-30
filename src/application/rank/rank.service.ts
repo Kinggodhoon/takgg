@@ -14,6 +14,7 @@ class RankService {
       FROM ranking r
       JOIN player p ON (p.player_id = r.player_id)
       JOIN player_profile pp ON (pp.player_id = r.player_id)
+      ORDER BY r.rank ASC
       LIMIT 100
     `;
 

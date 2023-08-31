@@ -65,10 +65,16 @@ class GamesService {
     return matchHistoryList;
   }
 
-  public getCountOfMatchHistory = async (playerId: string): Promise<number> => {
+  public getCountOfMatchHistory = async (playerId: string): Promise<{
+    total: number,
+    winCount: number,
+    loseCount: number,
+  }> => {
     const query = `
       SELECT
-        COUNT(*) as "count"
+        COUNT(*) as "total"
+        ,COUNT(case when winner_player_id = @playerId then 1 end) as "winCount"
+        ,COUNT(case when winner_player_id != @playerId then 1 end) as "loseCount"
       FROM games g
       WHERE (g.winner_player_id = @playerId OR g.loser_player_id = @playerId)
         AND status = @status
@@ -85,12 +91,16 @@ class GamesService {
       },
     }
 
-    const result = await Database.prepareExcute<{ count: number }>({
+    const result = await Database.prepareExcute<{
+      total: number,
+      winCount: number,
+      loseCount: number,
+    }>({
       query,
       inputParams,
     });
 
-    return result![0].count;
+    return result![0];
   }
 
   public getPlayerMatchHistory = async (playerId: string, page: number): Promise<Array<MatchHistoryRaw>> => {

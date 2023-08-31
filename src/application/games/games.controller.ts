@@ -100,14 +100,14 @@ class GamesController extends Controller {
       const params = req.requestParams as GetPlayerMatchHistoryRequest;
 
       const rawMatchHistoryList = await this.gamesService.getPlayerMatchHistory(params.playerId, params.page);
-      const total = await this.gamesService.getCountOfMatchHistory(params.playerId);
+      const matchCountInfo = await this.gamesService.getCountOfMatchHistory(params.playerId);
       const matchHistoryList = this.gamesService.formatMatchHistory(rawMatchHistoryList);
 
       res.responseData = {
         code: 200,
         message: 'Success',
         data: {
-          total,
+          ...matchCountInfo,
           games: matchHistoryList,
         },
       }

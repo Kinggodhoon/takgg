@@ -8,17 +8,20 @@ import { GetPlayerProfileRequest, UpdatePlayerProfileRequest } from './model/pla
 import PlayersService from './players.service';
 import authorizeValidate from '../../middleware/authorize.validate';
 import { HttpException } from '../../types/exception';
+import GamesService from '../games/games.service';
 
 class PlayersController extends Controller {
   public readonly path = '/players';
 
   private playersService: PlayersService;
+  private gamesService: GamesService;
 
   constructor() {
     super();
     this.initializeRoutes();
 
     this.playersService = new PlayersService();
+    this.gamesService = new GamesService();
   }
 
   private initializeRoutes() {
@@ -51,12 +54,16 @@ class PlayersController extends Controller {
       const params = req.requestParams as GetPlayerProfileRequest;
 
       const playerProfile = await this.playersService.getPlayerProfile(params.playerId);
+      const matchStat = await this.gamesService.getCountOfMatchHistory(params.playerId);
       if (!playerProfile) throw new HttpException(404, 'Player Not Found');
 
       res.responseData = {
         code: 200,
         message: 'Success',
-        data: playerProfile,
+        data: {
+          matchStat,
+          ...playerProfile,
+        },
       }
     } catch (error) {
       console.log(error);

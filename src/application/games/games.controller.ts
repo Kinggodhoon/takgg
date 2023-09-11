@@ -107,7 +107,7 @@ class GamesController extends Controller {
         code: 200,
         message: 'Success',
         data: {
-          ...matchCountInfo,
+          total: matchCountInfo.total,
           games: matchHistoryList,
         },
       }
